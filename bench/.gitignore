@@ -1,2 +1,3 @@
 data/
-stackdriver-prometheus-sidecar
+metrics/
+stackdriver-prometheus-sidecar*

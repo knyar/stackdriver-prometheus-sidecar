@@ -34,13 +34,21 @@ if [ -n "${SIDECAR_OLD}" ]; then
   echo "Starting old sidecar"
   
   ${SIDECAR_OLD} \
-    --log.level=debug \
     --stackdriver.project-id=test \
     --web.listen-address="0.0.0.0:9093" \
-    --stackdriver.debug \
+    --stackdriver.generic.location="test-cluster" \
+    --stackdriver.generic.namespace="test-namespace" \
     --stackdriver.api-address="http://127.0.0.1:9092/?auth=false" \
     2>&1 | sed -e "s/^/[sidecar-old] /" &
 fi
+
+mkdir -p ./metrics
+bash -c 'while :; do
+  curl -s 127.0.0.1:9091/metrics > metrics/sidecar.`date +%Y-%m-%dT%H:%M:%S`
+  curl -s 127.0.0.1:9093/metrics > metrics/sidecar_old.`date +%Y-%m-%dT%H:%M:%S`
+  curl -s 127.0.0.1:9090/metrics > metrics/server.`date +%Y-%m-%dT%H:%M:%S`
+  sleep 60
+done'
 
 wait
 

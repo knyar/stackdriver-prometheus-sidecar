@@ -6,3 +6,14 @@ static_metadata:
 - metric: metric:without:metadata
   type: counter
   help: "some help text"
+
+aggregated_counters:
+  - metric: grpc_server_handled_total
+    help: total number of messages handled by grpc
+    filters:
+     - 'grpc_server_handled_total'
+  - metric: bogus_counter
+    help: meaningless counter with a sum of all buckets of several counters
+    filters:
+     - 'grpc_server_handling_seconds_bucket'
+     - 'go_gc_duration_seconds'

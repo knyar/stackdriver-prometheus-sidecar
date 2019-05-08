@@ -26,6 +26,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	metric_pb "google.golang.org/genproto/googleapis/api/metric"
 	monitoring_pb "google.golang.org/genproto/googleapis/monitoring/v3"
 	"google.golang.org/grpc"
 )
@@ -84,4 +85,9 @@ type server struct {
 func (srv *server) CreateTimeSeries(_ context.Context, req *monitoring_pb.CreateTimeSeriesRequest) (*empty.Empty, error) {
 	time.Sleep(srv.latency)
 	return &empty.Empty{}, nil
+}
+
+func (srv *server) CreateMetricDescriptor(_ context.Context, req *monitoring_pb.CreateMetricDescriptorRequest) (*metric_pb.MetricDescriptor, error) {
+	time.Sleep(srv.latency)
+	return req.MetricDescriptor, nil
 }
