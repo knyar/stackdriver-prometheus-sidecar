@@ -82,7 +82,7 @@ type recoverableError struct {
 // version.* is populated for 'promu' builds, so this will look broken in unit tests.
 var userAgent = fmt.Sprintf("StackdriverPrometheus/%s", version.Version)
 
-func (c *Client) getConnection(ctx context.Context) (*grpc.ClientConn, error) {
+func (c *Client) GetConnection(ctx context.Context) (*grpc.ClientConn, error) {
 	if c.conn != nil {
 		return c.conn, nil
 	}
@@ -136,7 +136,7 @@ func (c *Client) Store(req *monitoring.CreateTimeSeriesRequest) error {
 	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
 	defer cancel()
 
-	conn, err := c.getConnection(ctx)
+	conn, err := c.GetConnection(ctx)
 	if err != nil {
 		return err
 	}

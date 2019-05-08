@@ -58,6 +58,7 @@ import (
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
+	"google.golang.org/api/option"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -292,6 +293,7 @@ func main() {
 	if *projectId == "" {
 		*projectId = getGCEProjectID()
 	}
+	cfg.projectIdResource = fmt.Sprintf("projects/%v", *projectId)
 
 	for _, backend := range cfg.monitoringBackends {
 		switch backend {
@@ -305,7 +307,20 @@ func main() {
 			}
 			view.RegisterExporter(promExporter)
 		case "stackdriver":
-			sd, err := oc_stackdriver.NewExporter(oc_stackdriver.Options{ProjectID: *projectId})
+			sdClient := stackdriver.NewClient(&stackdriver.ClientConfig{
+				ProjectId: cfg.projectIdResource,
+				URL:       cfg.stackdriverAddress,
+			})
+			conn, err := sdClient.GetConnection(context.Background())
+			if err != nil {
+				level.Error(logger).Log("msg", "Cannot get Stackdriver grpc connection", "err", err)
+				os.Exit(1)
+			}
+
+			sd, err := oc_stackdriver.NewExporter(oc_stackdriver.Options{
+				ProjectID:               *projectId,
+				MonitoringClientOptions: []option.ClientOption{option.WithGRPCConn(conn)},
+			})
 			if err != nil {
 				level.Error(logger).Log("msg", "Creating Stackdriver exporter failed", "err", err)
 				os.Exit(1)
@@ -339,7 +354,6 @@ func main() {
 		os.Exit(2)
 	}
 
-	cfg.projectIdResource = fmt.Sprintf("projects/%v", *projectId)
 	targetsURL, err := cfg.prometheusURL.Parse(targets.DefaultAPIEndpoint)
 	if err != nil {
 		panic(err)
