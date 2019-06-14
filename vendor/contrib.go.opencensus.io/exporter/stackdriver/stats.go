@@ -190,6 +190,9 @@ func (e *statsExporter) uploadStats(vds []*view.Data) error {
 			// TODO(jbd): Don't fail fast here, batch errors?
 			return err
 		}
+		for _, ts := range req.TimeSeries {
+			e.o.handleError(fmt.Errorf("Exported metric %v to Stackdriver", ts.Metric.Type))
+		}
 	}
 	return nil
 }
